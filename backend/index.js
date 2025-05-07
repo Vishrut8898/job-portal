@@ -8,6 +8,7 @@ import companyRoute from "./routes/company.route.js";
 import jobRoute from "./routes/job.route.js";
 import applicationRoute from "./routes/application.route.js";
 import path from "path";
+import fs from "fs";
 
 dotenv.config({});
 
@@ -35,10 +36,18 @@ app.use("/api/v1/job", jobRoute);
 app.use("/api/v1/application", applicationRoute);
 
 if (process.env.NODE_ENV === "production") {
-    app.use(express.static(path.join(__dirname, "../frontend/dist")));
+    const distPath = path.join(__dirname, "../frontend/dist");
+
+    // Check if the dist directory exists
+    if (!fs.existsSync(distPath)) {
+        console.error("Error: 'dist' directory not found. Ensure the frontend is built before deployment.");
+        process.exit(1);
+    }
+
+    app.use(express.static(distPath));
 
     app.get("*", (req, res) => {
-        res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+        res.sendFile(path.join(distPath, "index.html"));
     });
 }
 
