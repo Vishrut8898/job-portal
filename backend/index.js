@@ -12,22 +12,18 @@ import fs from "fs";
 
 dotenv.config({});
 
+const PORT = process.env.PORT || 3000;
+
 const app = express();
 const __dirname = path.resolve();
 
 // middleware
 app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-const corsOptions = {
+app.use(cors({
     origin: 'http://localhost:5173',
     credentials: true
-}
-
-app.use(cors(corsOptions));
-
-const PORT = process.env.PORT || 3000;
-
+}));
 
 // api's
 app.use("/api/v1/user", userRoute);
@@ -36,18 +32,10 @@ app.use("/api/v1/job", jobRoute);
 app.use("/api/v1/application", applicationRoute);
 
 if (process.env.NODE_ENV === "production") {
-    const distPath = path.join(__dirname, "../frontend/dist");
-
-    // Check if the dist directory exists
-    if (!fs.existsSync(distPath)) {
-        console.error("Error: 'dist' directory not found. Ensure the frontend is built before deployment.");
-        process.exit(1);
-    }
-
-    app.use(express.static(distPath));
+    app.use(express.static(path.join(__dirname, "../frontend", "dist")));
 
     app.get("*", (req, res) => {
-        res.sendFile(path.join(distPath, "index.html"));
+        res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
     });
 }
 
